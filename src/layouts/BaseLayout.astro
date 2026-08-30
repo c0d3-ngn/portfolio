@@ -11,7 +11,11 @@ interface Props {
 	noindex?: boolean;
 }
 
-const { title = `${profile.name} — ${profile.role}`, description = profile.tagline, noindex = false } = Astro.props;
+const {
+	title = `${profile.name} — ${profile.role} in ${profile.location.split(",")[0]}`,
+	description = profile.metaDescription,
+	noindex = false,
+} = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = new URL("/avatar.png", Astro.site);
