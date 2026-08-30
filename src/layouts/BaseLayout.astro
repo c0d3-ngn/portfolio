@@ -3,6 +3,7 @@ import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 import "@/styles/global.css";
 import { profile } from "@/data/profile";
+import { getCareer } from "@/lib/content";
 
 interface Props {
 	title?: string;
@@ -15,14 +16,22 @@ const { title = `${profile.name} — ${profile.role}`, description = profile.tag
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = new URL("/avatar.png", Astro.site);
 
+const [currentRole] = await getCareer();
+const worksFor =
+	currentRole && !currentRole.data.end ? { "@type": "Organization", name: currentRole.data.company } : undefined;
+
 const personSchema = {
 	"@context": "https://schema.org",
 	"@type": "Person",
 	name: profile.name,
 	jobTitle: profile.role,
+	description: profile.tagline,
 	url: String(Astro.site),
+	image: String(socialImageURL),
 	email: `mailto:${profile.email}`,
 	address: profile.location,
+	knowsAbout: profile.stackSummary,
+	...(worksFor && { worksFor }),
 	sameAs: profile.socials.map((social) => social.url),
 };
 ---
@@ -37,6 +46,7 @@ const personSchema = {
 
 		<title>{title}</title>
 		<meta name="description" content={description}>
+		<meta name="author" content={profile.name}>
 		<meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"}>
 		<link rel="canonical" href={canonicalURL}>
 		<meta name="theme-color" content="#0A0A0B">
