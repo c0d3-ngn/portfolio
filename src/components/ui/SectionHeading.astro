@@ -1,0 +1,21 @@
+---
+interface Props {
+	index: number;
+	title: string;
+	id: string;
+}
+
+const { index, title, id } = Astro.props;
+const paddedIndex = String(index).padStart(2, "0");
+---
+
+<div id={id} class="scroll-mt-24 border-b border-rule pb-4">
+	<div class="flex items-baseline gap-4">
+		<span class="font-mono text-sm text-ink-mute">{paddedIndex}</span>
+		<h2 data-glitch-line data-glitch-radius="60" class="font-display text-h2 text-ink">{title}</h2>
+	</div>
+</div>
+
+<script>
+import "@/lib/glitch-name";
+</script>

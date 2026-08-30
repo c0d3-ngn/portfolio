@@ -1,0 +1,62 @@
+---
+import { profile } from "@/data/profile";
+
+const { displayLines, role, tagline, socials } = profile;
+---
+
+<section class="mx-auto flex min-h-screen max-w-5xl flex-col justify-center px-6 py-24 sm:px-10">
+	<p class="border-b border-rule pb-4 font-mono text-sm text-ink-mute">{role}</p>
+
+	<div class="mt-10 flex flex-col-reverse items-start gap-8 md:flex-row md:items-center md:justify-between">
+		<h1 class="font-display leading-[0.92] tracking-tight text-ink">
+			{displayLines.map((line, i) => (
+					<span
+						data-reveal
+						data-glitch-line
+						style={`--reveal-delay: ${i * 90}ms`}
+						class="block text-display"
+					>
+						{line}
+					</span>
+				))}
+		</h1>
+
+		<div data-reveal style={`--reveal-delay: ${displayLines.length * 90}ms`}>
+			<div class="avatar-frame h-28 w-28 md:h-56 md:w-56">
+				<canvas aria-hidden="true" data-src="/avatar.png"></canvas>
+			</div>
+			<p class="avatar-caption">hover to disturb</p>
+		</div>
+	</div>
+
+	<p
+		data-reveal
+		style={`--reveal-delay: ${displayLines.length * 90 + 120}ms`}
+		class="mt-10 max-w-xl text-(length:--text-lg) text-ink-mute"
+	>
+		{tagline}
+	</p>
+
+	<div
+		data-reveal
+		style={`--reveal-delay: ${displayLines.length * 90 + 220}ms`}
+		class="mt-12 flex flex-wrap items-center gap-6 border-t border-rule pt-8"
+	>
+		<a
+			href={`mailto:${profile.email}`}
+			class="link-accent inline-flex items-center gap-2 border border-rule px-5 py-3 font-mono text-sm text-ink hover:border-accent"
+		>
+			Get in touch
+		</a>
+		{socials.map((social) => (
+				<a href={social.url} target="_blank" rel="noreferrer noopener" class="link-accent font-mono text-sm text-ink-mute">
+					{social.label}
+				</a>
+			))}
+	</div>
+</section>
+
+<script>
+import "@/lib/dot-portrait";
+import "@/lib/glitch-name";
+</script>

@@ -1,0 +1,33 @@
+---
+import { render } from "astro:content";
+import SectionHeading from "@/components/ui/SectionHeading.astro";
+import Tag from "@/components/ui/Tag.astro";
+import { profile } from "@/data/profile";
+import { getAbout } from "@/lib/content";
+
+const about = await getAbout();
+const { Content } = await render(about);
+---
+
+<section class="mx-auto max-w-5xl px-6 py-24 sm:px-10">
+	<SectionHeading index={1} title={about.data.heading} id="about" />
+
+	<div class="mt-10 grid gap-10 md:grid-cols-[2fr_1fr]" data-reveal>
+		<div
+			class="max-w-2xl text-(length:--text-lg) text-ink-mute [&_a:hover]:text-accent [&_a]:text-ink [&_a]:underline [&_a]:decoration-rule [&_p+p]:mt-4 [&_strong]:text-ink"
+		>
+			<Content />
+		</div>
+
+		<div>
+			<h3 class="font-mono text-sm text-ink-mute">Stack</h3>
+			<ul class="mt-4 flex flex-wrap gap-2">
+				{profile.stackSummary.map((item) => (
+						<li>
+							<Tag label={item} />
+						</li>
+					))}
+			</ul>
+		</div>
+	</div>
+</section>

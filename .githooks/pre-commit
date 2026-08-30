@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "pre-commit: biome check"
+bun run lint
+
+echo "pre-commit: astro check"
+bun run check

@@ -1,0 +1,55 @@
+---
+import { render } from "astro:content";
+import SectionHeading from "@/components/ui/SectionHeading.astro";
+import Tag from "@/components/ui/Tag.astro";
+import { getCareer } from "@/lib/content";
+import { formatCareerPeriod } from "@/lib/format";
+
+const roles = await getCareer();
+const renderedRoles = await Promise.all(
+	roles.map(async (role) => {
+		const { Content } = await render(role);
+		return { role, Content };
+	}),
+);
+---
+
+<section class="mx-auto max-w-5xl px-6 py-24 sm:px-10">
+	<SectionHeading index={3} title="Career" id="career" />
+
+	<ol class="mt-10 flex flex-col">
+		{renderedRoles.map(({ role, Content }, i) => (
+				<li
+					data-reveal
+					style={`--reveal-delay: ${i * 80}ms`}
+					class="flex flex-col gap-2 border-b border-rule py-8 first:pt-0 last:border-b-0 md:flex-row md:gap-10"
+				>
+					<p class="font-mono text-sm text-ink-mute md:w-40 md:flex-none">
+						{formatCareerPeriod(role.data.start, role.data.end)}
+					</p>
+
+					<div class="flex-1">
+						<h3 class="font-display text-h2 text-ink">{role.data.role}</h3>
+						<p class="mt-1 text-ink-mute">
+							{role.data.company}
+							{role.data.location ? ` — ${role.data.location}` : ''}
+						</p>
+
+						<div class="mt-3 max-w-2xl text-ink-mute">
+							<Content />
+						</div>
+
+						{role.data.stack.length > 0 && (
+							<ul class="mt-4 flex flex-wrap gap-2">
+								{role.data.stack.map((tech) => (
+									<li>
+										<Tag label={tech} />
+									</li>
+								))}
+							</ul>
+						)}
+					</div>
+				</li>
+			))}
+	</ol>
+</section>

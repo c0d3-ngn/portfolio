@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "pre-push: biome check"
+bun run lint
+
+echo "pre-push: astro check"
+bun run check
+
+echo "pre-push: vitest"
+bun run test
+
+echo "pre-push: build"
+bun run build

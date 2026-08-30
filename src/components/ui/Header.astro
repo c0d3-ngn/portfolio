@@ -1,0 +1,39 @@
+---
+import { profile } from "@/data/profile";
+import { SiteMode } from "@/types/mode";
+import ModeToggle from "./ModeToggle.astro";
+
+const initials = profile.displayLines.map((line) => line[0]).join("");
+
+const navLinks = [
+	{ href: "#about", label: "About" },
+	{ href: "#projects", label: "Projects" },
+	{ href: "#career", label: "Career" },
+	{ href: "#contact", label: "Contact" },
+];
+---
+
+<header class="sticky top-0 z-40 border-b border-rule bg-ground/90 backdrop-blur">
+	<div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4 sm:px-10">
+		<a href="#main" aria-label={`${profile.name} — back to top`} class="link-accent font-mono text-sm text-ink">
+			{initials}
+		</a>
+
+		<nav aria-label="Section" class="hidden items-center gap-6 sm:flex">
+			{navLinks.map((link) => (
+					<a
+						href={link.href}
+						class="link-accent font-mono text-sm text-ink-mute aria-[current=location]:text-accent"
+					>
+						{link.label}
+					</a>
+				))}
+		</nav>
+
+		<ModeToggle mode={SiteMode.Preview} />
+	</div>
+</header>
+
+<script>
+import "@/lib/nav";
+</script>

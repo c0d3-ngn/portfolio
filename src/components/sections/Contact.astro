@@ -1,0 +1,34 @@
+---
+import SectionHeading from "@/components/ui/SectionHeading.astro";
+import { profile } from "@/data/profile";
+---
+
+<section class="mx-auto max-w-5xl px-6 py-24 sm:px-10">
+	<SectionHeading index={4} title="Contact" id="contact" />
+
+	<div class="mt-10 flex flex-col gap-8" data-reveal>
+		<p class="max-w-xl text-(length:--text-lg) text-ink-mute">
+			Have a project in mind, or just want to say hello? I'd love to hear from you.
+		</p>
+
+		<a href={`mailto:${profile.email}`} class="link-accent wrap-break-word font-display text-h1 leading-tight text-ink">
+			{profile.email}
+		</a>
+
+		<p class="font-mono text-sm text-ink-mute">{profile.location}</p>
+
+		<div class="flex flex-wrap gap-6 font-mono text-sm">
+			{profile.socials.map((social) => (
+					<a
+						href={social.url}
+						target="_blank"
+						rel="noreferrer noopener"
+						class="link-accent text-ink-mute"
+					>
+						{social.label}{" "}
+						<span class="text-ink-mute/60">{social.handle}</span>
+					</a>
+				))}
+		</div>
+	</div>
+</section>
