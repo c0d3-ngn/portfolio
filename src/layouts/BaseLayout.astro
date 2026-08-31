@@ -38,6 +38,13 @@ const personSchema = {
 	...(worksFor && { worksFor }),
 	sameAs: profile.socials.map((social) => social.url),
 };
+
+const websiteSchema = {
+	"@context": "https://schema.org",
+	"@type": "WebSite",
+	name: profile.name,
+	url: String(Astro.site),
+};
 ---
 
 <!doctype html>
@@ -45,7 +52,7 @@ const personSchema = {
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="icon" type="image/png" href="/avatar.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png">
 		<meta name="generator" content={Astro.generator}>
 
 		<title>{title}</title>
@@ -78,6 +85,13 @@ const personSchema = {
 					type="application/ld+json"
 					is:inline
 					set:html={JSON.stringify(personSchema)}
+				/>
+			)}
+		{!noindex && (
+				<script
+					type="application/ld+json"
+					is:inline
+					set:html={JSON.stringify(websiteSchema)}
 				/>
 			)}
 
