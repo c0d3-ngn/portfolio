@@ -1,0 +1,51 @@
+---
+import Terminal from "@/components/terminal/Terminal";
+import ModeToggle from "@/components/ui/ModeToggle.astro";
+import { terminalStrings } from "@/i18n/terminal";
+import { LOCALE_LABELS, type Locale } from "@/i18n/ui";
+import { getUi } from "@/i18n/utils";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getTerminalData } from "@/lib/terminal-data";
+import { SiteMode } from "@/types/mode";
+
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+const strings = terminalStrings[locale];
+const data = await getTerminalData({
+	locale,
+	presentLabel: getUi(locale).career.present,
+	pathname: Astro.url.pathname,
+});
+---
+
+<BaseLayout locale={locale} title={strings.pageTitle} noindex>
+	<div class="relative isolate flex h-dvh flex-col gap-3 p-3 sm:p-6">
+		<div aria-hidden="true" class="bg-dot-grid pointer-events-none absolute inset-0 -z-10 opacity-60"></div>
+
+		<div class="mx-auto flex w-full max-w-4xl items-center justify-between font-mono text-sm">
+			<ModeToggle mode={SiteMode.Dev} locale={locale} />
+			<a
+				href={data.links.alternate}
+				hreflang={data.links.alternateLocale}
+				lang={data.links.alternateLocale}
+				class="link-accent inline-flex h-11 items-center text-ink-mute"
+			>
+				{LOCALE_LABELS[data.links.alternateLocale]}
+			</a>
+		</div>
+
+		<h1 class="sr-only">{strings.pageTitle}</h1>
+
+		<Terminal client:load data={data} strings={strings} className="flex-1" />
+
+		<noscript>
+			<p class="mx-auto max-w-4xl font-mono text-sm text-ink-mute">
+				{strings.noscript}
+				<a href={data.links.preview} class="link-accent text-accent">{strings.skipToPreview}</a>
+			</p>
+		</noscript>
+	</div>
+</BaseLayout>

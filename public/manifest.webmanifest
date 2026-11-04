@@ -1,0 +1,13 @@
+{
+	"name": "Ivan Martin Prieto",
+	"short_name": "IMP",
+	"description": "Computer Science Engineer and Full Stack Developer based in Madrid.",
+	"start_url": "/",
+	"display": "browser",
+	"background_color": "#0a0a0b",
+	"theme_color": "#0a0a0b",
+	"icons": [
+		{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+		{ "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+	]
+}

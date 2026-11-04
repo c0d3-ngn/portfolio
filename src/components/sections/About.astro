@@ -1,33 +1,138 @@
 ---
 import { render } from "astro:content";
+import { MapPin, Server } from "lucide-react";
+import LiveClock from "@/components/islands/LiveClock";
+import NumberTicker from "@/components/islands/NumberTicker";
 import SectionHeading from "@/components/ui/SectionHeading.astro";
-import Tag from "@/components/ui/Tag.astro";
-import { profile } from "@/data/profile";
-import { getAbout } from "@/lib/content";
+import { getProfile } from "@/data/profile";
+import type { Locale } from "@/i18n/ui";
+import { getUi } from "@/i18n/utils";
+import { getAbout, getCareer, getProjects } from "@/lib/content";
+import { yearsOfExperience } from "@/lib/format";
 
-const about = await getAbout();
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+const profile = getProfile(locale);
+const t = getUi(locale);
+
+const about = await getAbout(locale);
 const { Content } = await render(about);
+const careerEntries = await getCareer(locale);
+const projectEntries = await getProjects(locale);
+
+const years = yearsOfExperience(
+	careerEntries.map((entry) => entry.data.start),
+	new Date(),
+);
+const stats = [
+	{ value: years, suffix: "+", label: t.about.yearsLabel },
+	{ value: careerEntries.length, suffix: "", label: t.about.companiesLabel },
+	{ value: projectEntries.length, suffix: "", label: t.about.projectsLabel },
+];
+
+const stackLoop = [...profile.stackSummary, ...profile.stackSummary];
+const marqueeRows = [
+	{ items: stackLoop, direction: "normal" },
+	{ items: [...stackLoop].reverse(), direction: "reverse" },
+];
 ---
 
-<section class="mx-auto max-w-5xl px-6 py-24 sm:px-10">
-	<SectionHeading index={1} title={about.data.heading} id="about" />
+<section id="about" class="mx-auto max-w-6xl scroll-mt-12 px-6 py-24 sm:px-10">
+	<SectionHeading index={1} title={about.data.heading} />
 
-	<div class="mt-10 grid gap-10 md:grid-cols-[2fr_1fr]" data-reveal>
-		<div
-			class="max-w-2xl text-(length:--text-lg) text-ink-mute [&_a:hover]:text-accent [&_a]:text-ink [&_a]:underline [&_a]:decoration-rule [&_p+p]:mt-4 [&_strong]:text-ink"
+	<div class="mt-12 grid gap-4 md:grid-cols-3">
+		<article
+			data-reveal
+			data-glow
+			class="glow-card flex flex-col justify-between gap-8 p-6 sm:p-8 md:col-span-2 md:row-span-2"
 		>
-			<Content />
-		</div>
+			<div
+				class="max-w-2xl text-(length:--text-lg) text-ink-mute [&_a:hover]:text-accent [&_a]:text-ink [&_a]:underline [&_a]:decoration-rule [&_p+p]:mt-4 [&_strong]:text-ink"
+			>
+				<Content />
+			</div>
+			<p class="font-mono text-xs tracking-widest text-accent uppercase">{profile.role}</p>
+		</article>
 
-		<div>
-			<h3 class="font-mono text-sm text-ink-mute">Stack</h3>
-			<ul class="mt-4 flex flex-wrap gap-2">
-				{profile.stackSummary.map((item) => (
-						<li>
-							<Tag label={item} />
-						</li>
+		<article data-reveal data-glow style="--reveal-delay: 80ms" class="glow-card p-6">
+			<dl class="grid grid-cols-3 gap-2 text-center md:text-left">
+				{stats.map((stat) => (
+						<div class="flex flex-col">
+							<dt class="order-2 mt-1 font-mono text-[0.6875rem] leading-tight text-ink-mute">{stat.label}</dt>
+							<dd class="font-display text-h1 leading-none text-ink">
+								<NumberTicker client:visible value={stat.value} suffix={stat.suffix} />
+							</dd>
+						</div>
 					))}
+			</dl>
+		</article>
+
+		<article
+			data-reveal
+			data-glow
+			style="--reveal-delay: 140ms"
+			class="glow-card flex flex-col justify-between gap-6 p-6"
+		>
+			<p class="flex items-center gap-2 font-mono text-xs text-ink-mute">
+				<MapPin aria-hidden="true" size={14} className="text-accent" />
+				{profile.location}
+			</p>
+			<div>
+				<p class="font-display text-h1 leading-none text-ink">
+					<LiveClock client:visible timeZone={profile.timeZone} locale={locale} />
+				</p>
+				<p class="mt-2 font-mono text-[0.6875rem] text-ink-mute">{t.about.localTime}</p>
+			</div>
+		</article>
+
+		<article
+			data-reveal
+			data-glow
+			style="--reveal-delay: 200ms"
+			class="marquee glow-card flex flex-col justify-center gap-3 overflow-hidden py-6 md:col-span-2"
+		>
+			<h3 class="sr-only">{t.about.stack}</h3>
+			{marqueeRows.map((row) => (
+					<div
+						class="overflow-hidden [mask-image:linear-gradient(to_right,transparent,#000_12%,#000_88%,transparent)]"
+						aria-hidden="true"
+					>
+						<div class="marquee-track" data-direction={row.direction}>
+							{[0, 1].map(() => (
+								<ul class="flex shrink-0 gap-3 pr-3">
+									{row.items.map((item) => (
+										<li class="rounded-full border border-rule bg-ground/60 px-4 py-2 font-mono text-sm whitespace-nowrap text-ink-mute">
+											{item}
+										</li>
+									))}
+								</ul>
+							))}
+						</div>
+					</div>
+				))}
+			<ul class="sr-only">
+				{profile.stackSummary.map((item) => <li>{item}</li>)}
 			</ul>
-		</div>
+		</article>
+
+		<article
+			data-reveal
+			data-glow
+			style="--reveal-delay: 260ms"
+			class="glow-card flex flex-col justify-between gap-6 p-6"
+		>
+			<Server aria-hidden="true" size={22} className="text-accent" />
+			<div>
+				<h3 class="font-display text-h2 leading-tight text-ink">{t.about.homeLabTitle}</h3>
+				<p class="mt-2 text-sm text-ink-mute">{t.about.homeLabText}</p>
+			</div>
+		</article>
 	</div>
 </section>
+
+<script>
+import "@/lib/glow-cards";
+</script>

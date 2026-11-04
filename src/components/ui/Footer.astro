@@ -1,23 +1,57 @@
 ---
-import { profile } from "@/data/profile";
+import { ArrowUp } from "lucide-react";
+import { getProfile } from "@/data/profile";
+import { LOCALE_LABELS, LOCALES, type Locale } from "@/i18n/ui";
+import { getAlternatePath, getUi } from "@/i18n/utils";
 import { SiteMode } from "@/types/mode";
 import ModeToggle from "./ModeToggle.astro";
 
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+const profile = getProfile(locale);
+const t = getUi(locale);
 const year = new Date().getFullYear();
 ---
 
-<footer class="border-t border-rule">
+<footer class="relative overflow-hidden border-t border-rule">
+	<div class="mx-auto max-w-6xl px-6 pt-16 sm:px-10">
+		<p
+			aria-hidden="true"
+			class="select-none font-display text-[clamp(3rem,13vw,11rem)] leading-[0.85] tracking-tight text-transparent [-webkit-text-stroke:1px_var(--color-rule)]"
+		>
+			{profile.displayLines.join(" ")}
+		</p>
+	</div>
+
 	<div
-		class="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10 font-mono text-sm text-ink-mute sm:flex-row sm:items-center sm:justify-between sm:px-10"
+		class="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 font-mono text-sm text-ink-mute sm:flex-row sm:items-center sm:justify-between sm:px-10"
 	>
-		<p>&copy; {year} {profile.name}</p>
-		<div class="flex flex-wrap items-center gap-6">
+		<p>&copy; {year} {profile.name}. {t.footer.rights}</p>
+
+		<div class="flex flex-wrap items-center gap-x-6 gap-y-1">
 			{profile.socials.map((social) => (
-					<a href={social.url} target="_blank" rel="noreferrer noopener" class="link-accent">
+					<a href={social.url} target="_blank" rel="noreferrer noopener" class="link-accent inline-flex h-11 items-center">
 						{social.label}
 					</a>
 				))}
-			<ModeToggle mode={SiteMode.Preview} />
+			{LOCALES.filter((other) => other !== locale).map((other) => (
+					<a
+						href={getAlternatePath(Astro.url.pathname, other)}
+						hreflang={other}
+						lang={other}
+						class="link-accent inline-flex h-11 items-center"
+					>
+						{LOCALE_LABELS[other]}
+					</a>
+				))}
+			<ModeToggle mode={SiteMode.Preview} locale={locale} />
+			<a href="#main" class="link-accent inline-flex h-11 items-center gap-2">
+				{t.backToTop}
+				<ArrowUp aria-hidden="true" size={14} />
+			</a>
 		</div>
 	</div>
 </footer>

@@ -1,95 +1,49 @@
 ---
-import { render } from "astro:content";
+import ProjectGrid, { type ProjectCardData } from "@/components/islands/ProjectGrid";
 import SectionHeading from "@/components/ui/SectionHeading.astro";
-import Tag from "@/components/ui/Tag.astro";
+import type { Locale } from "@/i18n/ui";
+import { getUi } from "@/i18n/utils";
 import { getProjects } from "@/lib/content";
-import { collectTags } from "@/lib/format";
+import { collectSharedKeys } from "@/lib/project-filter";
 
-const projects = await getProjects();
-const allTags = collectTags(projects);
-const renderedProjects = await Promise.all(
-	projects.map(async (project) => {
-		const { Content } = await render(project);
-		return { project, Content };
-	}),
-);
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = getUi(locale);
+
+const projects = await getProjects(locale);
+const filters = collectSharedKeys(projects.map((project) => project.data.stack));
+
+const cards: ProjectCardData[] = projects.map((project) => ({
+	id: project.id,
+	title: project.data.title,
+	html: project.rendered?.html ?? "",
+	stack: project.data.stack,
+	repo: project.data.repo,
+	demo: project.data.demo,
+	featured: project.data.featured,
+	preview: project.data.preview,
+	previewLabel: project.data.previewLabel,
+}));
 ---
 
-<section class="mx-auto max-w-5xl px-6 py-24 sm:px-10">
-	<SectionHeading index={2} title="Projects" id="projects" />
+<section id="projects" class="mx-auto max-w-6xl scroll-mt-12 px-6 py-24 sm:px-10">
+	<SectionHeading index={2} title={t.projects.heading} />
 
-	{allTags.length > 0 && (
-			<p class="mt-6 font-mono text-sm text-ink-mute">Filed under: {allTags.join(', ')}</p>
-		)}
-
-	<div class="mt-10 grid gap-8 md:grid-cols-2">
-		{renderedProjects.map(({ project, Content }, i) => (
-				<article
-					data-reveal
-					style={`--reveal-delay: ${i * 80}ms`}
-					class="flex flex-col gap-4 border border-rule p-6"
-				>
-					{project.data.preview && (
-						<div class="project-preview">
-							<canvas aria-hidden="true" data-seed={project.data.title} data-mode={project.data.preview}></canvas>
-							{project.data.previewLabel && (
-								<span class="project-preview-label">{project.data.previewLabel}</span>
-							)}
-						</div>
-					)}
-
-					<div>
-						<h3 class="font-display text-h2 text-ink">{project.data.title}</h3>
-						<div class="mt-2 max-w-2xl text-ink-mute [&_p+p]:mt-3">
-							<Content />
-						</div>
-					</div>
-
-					<ul class="flex flex-wrap gap-2">
-						{project.data.stack.map((tech) => (
-							<li>
-								<Tag label={tech} />
-							</li>
-						))}
-					</ul>
-
-					{project.data.tags.length > 0 && (
-						<ul class="flex flex-wrap gap-2">
-							{project.data.tags.map((tag) => (
-								<li>
-									<Tag label={tag} />
-								</li>
-							))}
-						</ul>
-					)}
-
-					<div class="mt-auto flex flex-wrap gap-6 border-t border-rule pt-4 font-mono text-sm">
-						{project.data.repo && (
-							<a
-								href={project.data.repo}
-								target="_blank"
-								rel="noreferrer noopener"
-								class="link-accent text-ink-mute"
-							>
-								Repo
-							</a>
-						)}
-						{project.data.demo && (
-							<a
-								href={project.data.demo}
-								target="_blank"
-								rel="noreferrer noopener"
-								class="link-accent text-ink-mute"
-							>
-								Demo
-							</a>
-						)}
-					</div>
-				</article>
-			))}
+	<div class="mt-12">
+		<ProjectGrid
+			client:visible
+			projects={cards}
+			filters={filters}
+			labels={{
+				filterLabel: t.projects.filterLabel,
+				all: t.projects.filterAll,
+				repo: t.projects.repo,
+				demo: t.projects.demo,
+				featured: t.projects.featured,
+			}}
+		/>
 	</div>
 </section>
-
-<script>
-import "@/lib/constellation";
-</script>

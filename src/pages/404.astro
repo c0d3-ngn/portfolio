@@ -1,0 +1,41 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const notFoundCopy = {
+	en: {
+		heading: "Page not found",
+		text: "The page you are looking for does not exist or has moved.",
+		link: "Back to the homepage",
+		href: "/",
+	},
+	es: {
+		heading: "Página no encontrada",
+		text: "La página que buscas no existe o se ha movido.",
+		link: "Volver al inicio",
+		href: "/es/",
+	},
+} as const;
+---
+
+<BaseLayout title="404 — Ivan Martin Prieto" noindex>
+	<section class="relative isolate flex min-h-svh flex-col items-center justify-center gap-12 px-6 py-24 text-center">
+		<div aria-hidden="true" class="bg-dot-grid pointer-events-none absolute inset-0 -z-10"></div>
+
+		<h1 class="font-mono text-sm tracking-widest text-accent">404</h1>
+
+		<div class="grid w-full max-w-3xl gap-10 sm:grid-cols-2 sm:text-left">
+			{(Object.keys(notFoundCopy) as (keyof typeof notFoundCopy)[]).map((locale) => (
+					<div lang={locale}>
+						<h2 class="font-display text-h2 leading-tight text-ink">{notFoundCopy[locale].heading}</h2>
+						<p class="mt-3 text-ink-mute">{notFoundCopy[locale].text}</p>
+						<a
+							href={notFoundCopy[locale].href}
+							class="link-accent mt-5 inline-flex h-11 items-center font-mono text-sm text-ink"
+						>
+							{notFoundCopy[locale].link} →
+						</a>
+					</div>
+				))}
+		</div>
+	</section>
+</BaseLayout>

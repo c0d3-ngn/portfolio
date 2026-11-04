@@ -1,32 +1,37 @@
 ---
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/ui";
+import { getUi, localizePath } from "@/i18n/utils";
 import { SiteMode } from "@/types/mode";
 
 interface Props {
 	/** Which mode this toggle is currently rendered in. */
 	mode: SiteMode;
+	locale?: Locale;
 	class?: string;
 }
 
-const { mode, class: className } = Astro.props;
-const target = mode === SiteMode.Preview ? "/dev" : "/";
-const label = mode === SiteMode.Preview ? "Switch to dev mode" : "Switch to preview mode";
+const { mode, locale = DEFAULT_LOCALE, class: className } = Astro.props;
+const t = getUi(locale);
+const isPreview = mode === SiteMode.Preview;
+const target = localizePath(isPreview ? "/dev" : "/", locale);
+const label = isPreview ? t.mode.toDev : t.mode.toPreview;
 ---
 
 <a
 	href={target}
 	aria-label={label}
-	class:list={['link-accent inline-flex items-center gap-2 font-mono text-sm text-ink-mute', className]}
+	class:list={['link-accent inline-flex h-11 items-center gap-2 font-mono text-sm text-ink-mute', className]}
 >
-	{mode === SiteMode.Preview ? (
+	{isPreview ? (
 			<>
-				dev
+				{t.mode.dev}
 				<ArrowRight aria-hidden="true" size={14} />
 			</>
 		) : (
 			<>
 				<ArrowLeft aria-hidden="true" size={14} />
-				preview
+				{t.mode.preview}
 			</>
 		)}
 </a>

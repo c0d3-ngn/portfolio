@@ -10,6 +10,14 @@ export default defineConfig({
 
 	integrations: [react()],
 
+	i18n: {
+		locales: ["en", "es"],
+		defaultLocale: "en",
+		routing: {
+			prefixDefaultLocale: false,
+		},
+	},
+
 	vite: {
 		plugins: [tailwindcss()],
 	},
@@ -19,16 +27,19 @@ export default defineConfig({
 			provider: fontProviders.google(),
 			name: "Fraunces",
 			cssVariable: "--font-display-raw",
+			styles: ["normal"],
 		},
 		{
 			provider: fontProviders.google(),
 			name: "Inter Tight",
 			cssVariable: "--font-body-raw",
+			styles: ["normal"],
 		},
 		{
 			provider: fontProviders.google(),
 			name: "JetBrains Mono",
 			cssVariable: "--font-mono-raw",
+			styles: ["normal"],
 		},
 	],
 });

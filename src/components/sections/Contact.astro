@@ -1,34 +1,67 @@
 ---
+import { ArrowUpRight } from "lucide-react";
+import ContactCta from "@/components/islands/ContactCta";
 import SectionHeading from "@/components/ui/SectionHeading.astro";
-import { profile } from "@/data/profile";
+import { getProfile } from "@/data/profile";
+import type { Locale } from "@/i18n/ui";
+import { getUi } from "@/i18n/utils";
+
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+const profile = getProfile(locale);
+const t = getUi(locale);
 ---
 
-<section class="mx-auto max-w-5xl px-6 py-24 sm:px-10">
-	<SectionHeading index={4} title="Contact" id="contact" />
+<section id="contact" class="relative isolate mx-auto max-w-6xl scroll-mt-12 px-6 py-24 sm:px-10">
+	<div
+		aria-hidden="true"
+		class="pointer-events-none absolute inset-x-0 top-1/3 -z-10 h-96 bg-[radial-gradient(ellipse_60%_100%_at_50%_50%,rgb(232_80_58/10%),transparent)]"
+	></div>
 
-	<div class="mt-10 flex flex-col gap-8" data-reveal>
-		<p class="max-w-xl text-(length:--text-lg) text-ink-mute">
-			Have a project in mind, or just want to say hello? I'd love to hear from you.
-		</p>
+	<SectionHeading index={4} title={t.contact.heading} />
 
-		<a href={`mailto:${profile.email}`} class="link-accent wrap-break-word font-display text-h1 leading-tight text-ink">
-			{profile.email}
-		</a>
+	<div class="mt-12 flex flex-col gap-10">
+		<p data-reveal class="max-w-xl text-(length:--text-lg) text-ink-mute">{t.contact.intro}</p>
 
-		<p class="font-mono text-sm text-ink-mute">{profile.location}</p>
+		<ContactCta
+			client:visible
+			title={t.contact.title}
+			email={profile.email}
+			labels={{ copy: t.contact.copyEmail, copied: t.contact.copied, send: t.contact.sendEmail }}
+		/>
 
-		<div class="flex flex-wrap gap-6 font-mono text-sm">
-			{profile.socials.map((social) => (
-					<a
-						href={social.url}
-						target="_blank"
-						rel="noreferrer noopener"
-						class="link-accent text-ink-mute"
-					>
-						{social.label}{" "}
-						<span class="text-ink-mute/60">{social.handle}</span>
-					</a>
-				))}
+		<div data-reveal>
+			<p class="font-mono text-xs tracking-widest text-ink-mute uppercase">{t.contact.socials}</p>
+			<ul class="mt-4 grid gap-4 sm:grid-cols-2">
+				{profile.socials.map((social) => (
+						<li>
+							<a
+								href={social.url}
+								target="_blank"
+								rel="noreferrer noopener"
+								data-glow
+								class="glow-card group flex min-h-20 items-center justify-between gap-4 px-6 py-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+							>
+								<span class="flex flex-col">
+									<span class="font-display text-h2 leading-tight text-ink">{social.label}</span>
+									<span class="font-mono text-sm text-ink-mute">{social.handle}</span>
+								</span>
+								<ArrowUpRight
+									aria-hidden="true"
+									size={22}
+									className="text-ink-mute transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-accent"
+								/>
+							</a>
+						</li>
+					))}
+			</ul>
 		</div>
 	</div>
 </section>
+
+<script>
+import "@/lib/glow-cards";
+</script>

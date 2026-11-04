@@ -16,6 +16,7 @@ const ALPHA_CUTOFF = 40;
 const REPEL_RADIUS_MULTIPLIER = 4.2;
 const REPEL_STRENGTH_MULTIPLIER = 2.4;
 const EASE_FACTOR = 0.18;
+const SETTLED_DISTANCE_PX = 0.02;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
 	return new Promise((resolve, reject) => {
@@ -109,29 +110,45 @@ async function mountAvatar(canvas: HTMLCanvasElement): Promise<() => void> {
 
 	let mouseX = -9999;
 	let mouseY = -9999;
+	let settled = true;
 	const onMouseMove = (event: MouseEvent) => {
 		const rect = canvas.getBoundingClientRect();
 		mouseX = event.clientX - rect.left;
 		mouseY = event.clientY - rect.top;
+		settled = false;
 	};
 	const onMouseLeave = () => {
 		mouseX = -9999;
 		mouseY = -9999;
+		settled = false;
 	};
 	canvas.addEventListener("mousemove", onMouseMove);
 	canvas.addEventListener("mouseleave", onMouseLeave);
 
 	const stopVisibilityLoop = runWhileVisible([canvas], () => {
+		if (settled) return;
 		const repelRadius = cellSize * REPEL_RADIUS_MULTIPLIER;
 		const repelStrength = cellSize * REPEL_STRENGTH_MULTIPLIER;
+		let largestStep = 0;
 		for (const d of dots) {
 			const displacement = repelDisplacement(d.restX - mouseX, d.restY - mouseY, repelRadius, repelStrength);
-			const targetX = d.restX + displacement.x;
-			const targetY = d.restY + displacement.y;
-			d.x += (targetX - d.x) * EASE_FACTOR;
-			d.y += (targetY - d.y) * EASE_FACTOR;
+			const stepX = (d.restX + displacement.x - d.x) * EASE_FACTOR;
+			const stepY = (d.restY + displacement.y - d.y) * EASE_FACTOR;
+			d.x += stepX;
+			d.y += stepY;
+			largestStep = Math.max(largestStep, Math.abs(stepX), Math.abs(stepY));
 		}
 		draw();
+		if (largestStep < SETTLED_DISTANCE_PX) {
+			settled = true;
+			if (mouseX === -9999) {
+				for (const d of dots) {
+					d.x = d.restX;
+					d.y = d.restY;
+				}
+				draw();
+			}
+		}
 	});
 
 	return () => {
