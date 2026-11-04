@@ -22,5 +22,5 @@
 /es/dev/*
   X-Robots-Tag: noindex, nofollow
 
-https://:project.pages.dev/*
+https://:worker.:account.workers.dev/*
   X-Robots-Tag: noindex
