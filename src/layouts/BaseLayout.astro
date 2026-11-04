@@ -2,98 +2,141 @@
 import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 import "@/styles/global.css";
-import { profile } from "@/data/profile";
-import { getCareer } from "@/lib/content";
+import { getProfile } from "@/data/profile";
+import { DEFAULT_LOCALE, LOCALES, type Locale, OG_LOCALES } from "@/i18n/ui";
+import { getAlternatePath, getUi } from "@/i18n/utils";
+import { getCareer, getProjects } from "@/lib/content";
+import { buildStructuredData } from "@/lib/seo/structured-data";
 
 interface Props {
+	locale?: Locale;
 	title?: string;
 	description?: string;
 	noindex?: boolean;
 }
 
 const {
-	title = `${profile.name} — ${profile.role} in ${profile.location.split(",")[0]}`,
-	description = profile.metaDescription,
+	locale = DEFAULT_LOCALE,
+	title: titleOverride,
+	description: descriptionOverride,
 	noindex = false,
 } = Astro.props;
 
+const profile = getProfile(locale);
+const t = getUi(locale);
+const city = profile.location.split(",")[0];
+const roleConnector = locale === "es" ? "en" : "in";
+
+const title = titleOverride ?? `${profile.name} — ${profile.role} ${roleConnector} ${city}`;
+const description = descriptionOverride ?? profile.metaDescription;
+
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const socialImageURL = new URL("/avatar.png", Astro.site);
+const avatarURL = new URL("/avatar.png", Astro.site);
+const socialImageURL = new URL("/og.png", Astro.site);
+const alternates = LOCALES.map((alternate) => ({
+	locale: alternate,
+	url: new URL(getAlternatePath(Astro.url.pathname, alternate), Astro.site),
+}));
 
-const [currentRole] = await getCareer();
-const worksFor =
-	currentRole && !currentRole.data.end ? { "@type": "Organization", name: currentRole.data.company } : undefined;
+const [currentRole] = await getCareer(locale);
+const employer = currentRole && !currentRole.data.end ? currentRole.data.company : undefined;
+const projects = noindex ? [] : await getProjects(locale);
 
-const personSchema = {
-	"@context": "https://schema.org",
-	"@type": "Person",
-	name: profile.name,
-	jobTitle: profile.role,
-	description: profile.tagline,
-	url: String(Astro.site),
-	image: String(socialImageURL),
-	email: `mailto:${profile.email}`,
-	address: profile.location,
-	knowsAbout: profile.stackSummary,
-	...(worksFor && { worksFor }),
-	sameAs: profile.socials.map((social) => social.url),
-};
-
-const websiteSchema = {
-	"@context": "https://schema.org",
-	"@type": "WebSite",
-	name: profile.name,
-	url: String(Astro.site),
-};
+const structuredData = buildStructuredData({
+	siteUrl: new URL("/", Astro.site).href,
+	pageUrl: String(canonicalURL),
+	locale,
+	locales: LOCALES,
+	title,
+	description,
+	person: {
+		name: profile.name,
+		jobTitle: profile.role,
+		description: profile.tagline,
+		email: profile.email,
+		locality: profile.address.locality,
+		countryCode: profile.address.countryCode,
+		knowsAbout: profile.stackSummary,
+		knowsLanguage: profile.languages,
+		sameAs: profile.socials.map((social) => social.url),
+		employer,
+	},
+	avatar: { url: String(avatarURL), width: 301, height: 301 },
+	socialImage: { url: String(socialImageURL), width: 1200, height: 630 },
+	projects: projects.map((project) => ({
+		name: project.data.title,
+		description: project.data.summary ?? "",
+		technologies: project.data.stack,
+		repository: project.data.repo,
+	})),
+});
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={locale}>
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png">
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+		<link rel="manifest" href="/manifest.webmanifest">
 		<meta name="generator" content={Astro.generator}>
 
 		<title>{title}</title>
 		<meta name="description" content={description}>
 		<meta name="author" content={profile.name}>
-		<meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"}>
+		<meta
+			name="robots"
+			content={noindex ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"}
+		>
 		<link rel="canonical" href={canonicalURL}>
 		<meta name="theme-color" content="#0A0A0B">
+		<meta name="color-scheme" content="dark">
+
+		{!noindex && alternates.map((alternate) => (
+				<link rel="alternate" hreflang={alternate.locale} href={alternate.url}>
+			))}
+		{!noindex && <link rel="alternate" hreflang="x-default" href={alternates[0]?.url}>}
 
 		<meta property="og:type" content="website">
 		<meta property="og:site_name" content={profile.name}>
 		<meta property="og:title" content={title}>
 		<meta property="og:description" content={description}>
 		<meta property="og:url" content={canonicalURL}>
+		<meta property="og:locale" content={OG_LOCALES[locale]}>
+		{LOCALES.filter((other) => other !== locale).map((other) => (
+				<meta property="og:locale:alternate" content={OG_LOCALES[other]}>
+			))}
 		<meta property="og:image" content={socialImageURL}>
-		<meta property="og:image:width" content="301">
-		<meta property="og:image:height" content="301">
-		<meta property="og:image:alt" content={`Portrait of ${profile.name}`}>
-		<meta name="twitter:card" content="summary">
+		<meta property="og:image:type" content="image/png">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+		<meta property="og:image:alt" content={`${profile.name} — ${profile.role}`}>
+		<meta name="twitter:card" content="summary_large_image">
 		<meta name="twitter:title" content={title}>
 		<meta name="twitter:description" content={description}>
 		<meta name="twitter:image" content={socialImageURL}>
+		<meta name="twitter:image:alt" content={`${profile.name} — ${profile.role}`}>
 
 		<Font cssVariable="--font-display-raw" preload />
 		<Font cssVariable="--font-body-raw" preload />
 		<Font cssVariable="--font-mono-raw" />
 
-		{!noindex && (
-				<script
-					type="application/ld+json"
-					is:inline
-					set:html={JSON.stringify(personSchema)}
-				/>
-			)}
-		{!noindex && (
-				<script
-					type="application/ld+json"
-					is:inline
-					set:html={JSON.stringify(websiteSchema)}
-				/>
-			)}
+		{!noindex && <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />}
+
+		<noscript>
+			<style>
+			[style*="opacity:0"],
+			[style*="opacity: 0"] {
+				opacity: 1 !important;
+				transform: none !important;
+			}
+			[data-reveal] {
+				opacity: 1;
+				transform: none;
+			}
+			</style>
+		</noscript>
 
 		<ClientRouter />
 	</head>
@@ -102,7 +145,7 @@ const websiteSchema = {
 			href="#main"
 			class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded focus:bg-accent focus:px-4 focus:py-2 focus:text-ground"
 		>
-			Skip to content
+			{t.skipToContent}
 		</a>
 		<slot name="header" />
 		<main id="main">
@@ -111,7 +154,6 @@ const websiteSchema = {
 		<slot name="footer" />
 
 		<script>
-		import "@/lib/cursor";
 		import "@/lib/reveal";
 		</script>
 	</body>

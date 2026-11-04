@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+@property --beam-angle {
+	syntax: "<angle>";
+	initial-value: 0deg;
+	inherits: false;
+}
+
+@theme inline {
+	--color-background: var(--color-ground);
+	--color-foreground: var(--color-ink);
+	--color-card: var(--color-surface);
+	--color-card-foreground: var(--color-ink);
+	--color-popover: var(--color-surface);
+	--color-popover-foreground: var(--color-ink);
+	--color-primary: var(--color-accent);
+	--color-primary-foreground: var(--color-ground);
+	--color-secondary: var(--color-surface);
+	--color-secondary-foreground: var(--color-ink);
+	--color-muted: var(--color-surface);
+	--color-muted-foreground: var(--color-ink-mute);
+	--color-border: var(--color-rule);
+	--color-input: var(--color-rule);
+	--color-ring: var(--color-accent);
+}
+
 @theme {
 	--font-display: var(--font-display-raw), ui-serif, Georgia, serif;
 	--font-body: var(--font-body-raw), ui-sans-serif, system-ui, sans-serif;
@@ -11,6 +35,8 @@
 	--color-ink: #edebe7;
 	--color-ink-mute: #8a8a93;
 	--color-accent: #e8503a;
+	--color-ok: #7ee0a0;
+	--color-warn: #f2c14e;
 
 	--text-display: clamp(3.5rem, 3rem + 5vw, 8rem);
 	--text-h1: clamp(2.25rem, 2rem + 2vw, 3.5rem);
@@ -38,6 +64,7 @@
 
 @layer base {
 	html {
+		color-scheme: dark;
 		scroll-behavior: smooth;
 	}
 
@@ -67,26 +94,27 @@
 			transform var(--duration-slow) var(--reveal-delay) var(--ease-out-expo);
 	}
 
+	[data-reveal-now] {
+		animation: reveal-in var(--duration-slow) var(--ease-out-expo) var(--reveal-delay, 0ms) both;
+	}
+
+	@keyframes reveal-in {
+		from {
+			opacity: 0;
+			transform: translateY(1rem);
+		}
+	}
+
 	[data-reveal].is-revealed {
 		opacity: 1;
 		transform: translateY(0);
 	}
 
 	.project-preview {
-		margin: -1.5rem -1.5rem 0;
-		height: 170px;
-		position: relative;
+		position: absolute;
+		inset: 0;
 		overflow: hidden;
-		border-bottom: 1px solid var(--color-rule);
 		background: var(--color-ground);
-	}
-
-	.project-preview canvas {
-		display: block;
-		width: 100%;
-		height: 100%;
-		position: relative;
-		z-index: 1;
 	}
 
 	.project-preview::before {
@@ -123,8 +151,146 @@
 	}
 
 	.avatar-frame {
-		border: 1px solid var(--color-rule);
 		flex-shrink: 0;
+		overflow: hidden;
+		border-radius: calc(1.5rem - 1px);
+	}
+
+	.bg-dot-grid {
+		background-image: radial-gradient(circle, rgb(237 235 231 / 14%) 1px, transparent 1px);
+		background-size: 28px 28px;
+		mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 30%, transparent 100%);
+	}
+
+	.border-beam {
+		padding: 1px;
+		border-radius: 1.5rem;
+		background: conic-gradient(
+			from var(--beam-angle),
+			var(--color-rule) 0 55%,
+			var(--color-accent) 80%,
+			var(--color-rule) 100%
+		);
+		animation: beam-spin 7s linear infinite;
+	}
+
+	@keyframes beam-spin {
+		to {
+			--beam-angle: 360deg;
+		}
+	}
+
+	.scroll-hint {
+		transform-origin: top;
+		animation: scroll-hint 2.2s var(--ease-out-expo) infinite;
+	}
+
+	@keyframes scroll-hint {
+		0% {
+			transform: scaleY(0);
+			opacity: 0;
+		}
+		40% {
+			transform: scaleY(1);
+			opacity: 1;
+		}
+		100% {
+			transform: scaleY(1);
+			opacity: 0;
+		}
+	}
+
+	.marquee-track {
+		display: flex;
+		width: max-content;
+		animation: marquee 38s linear infinite;
+	}
+
+	.marquee-track[data-direction="reverse"] {
+		animation-direction: reverse;
+	}
+
+	.marquee:hover .marquee-track {
+		animation-play-state: paused;
+	}
+
+	@keyframes marquee {
+		to {
+			transform: translateX(-50%);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.marquee-track {
+			animation: none !important;
+		}
+	}
+
+	.terminal-line {
+		animation: terminal-line-in 0.28s var(--ease-out-expo) both;
+	}
+
+	@keyframes terminal-line-in {
+		from {
+			opacity: 0;
+			transform: translateY(3px);
+		}
+	}
+
+	.terminal-caret {
+		display: inline-block;
+		width: 0.6em;
+		height: 1.1em;
+		margin-left: 1px;
+		vertical-align: text-bottom;
+		background: var(--color-accent);
+		animation: terminal-caret-blink 1.05s steps(1) infinite;
+	}
+
+	@keyframes terminal-caret-blink {
+		50% {
+			opacity: 0;
+		}
+	}
+
+	.terminal-scroll {
+		scrollbar-width: thin;
+		scrollbar-color: var(--color-rule) transparent;
+	}
+
+	.glow-card {
+		position: relative;
+		border: 1px solid var(--color-rule);
+		border-radius: 1.5rem;
+		background: color-mix(in oklab, var(--color-surface) 70%, transparent);
+		transition:
+			transform var(--duration-base) var(--ease-out-expo),
+			background-color var(--duration-base) var(--ease-out-expo);
+	}
+
+	.glow-card::before {
+		content: "";
+		position: absolute;
+		inset: -1px;
+		padding: 1px;
+		border-radius: inherit;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity var(--duration-base) var(--ease-out-expo);
+		background: radial-gradient(
+			260px circle at var(--mx, -999px) var(--my, -999px),
+			var(--color-accent),
+			transparent 70%
+		);
+		mask:
+			linear-gradient(#000 0 0) content-box,
+			linear-gradient(#000 0 0);
+		mask-composite: exclude;
+	}
+
+	.glow-card:hover::before,
+	.glow-card:focus-within::before {
+		opacity: 1;
 	}
 
 	.avatar-frame canvas {
@@ -156,34 +322,11 @@
 
 	.glitch-letter {
 		display: inline-block;
+		white-space: pre;
 	}
 
 	.glitch-letter.is-glitching {
 		font-family: var(--font-mono);
 		color: var(--color-accent);
-	}
-
-	body.cursor-none-active,
-	body.cursor-none-active * {
-		cursor: none;
-	}
-
-	.cursor-blob {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 16px;
-		height: 16px;
-		margin: -8px 0 0 -8px;
-		border-radius: 50%;
-		background: var(--color-accent);
-		pointer-events: none;
-		z-index: 100;
-		transition: background var(--duration-fast) ease;
-	}
-
-	.cursor-blob.hovering {
-		background: rgb(232 80 58 / 14%);
-		border: 1px solid var(--color-accent);
 	}
 }

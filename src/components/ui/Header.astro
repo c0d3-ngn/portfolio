@@ -1,39 +1,43 @@
 ---
-import { profile } from "@/data/profile";
-import { SiteMode } from "@/types/mode";
-import ModeToggle from "./ModeToggle.astro";
+import NavBar from "@/components/islands/NavBar";
+import { getProfile } from "@/data/profile";
+import { LOCALE_LABELS, LOCALES, type Locale } from "@/i18n/ui";
+import { getAlternatePath, getUi, localizePath } from "@/i18n/utils";
+
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+const profile = getProfile(locale);
+const t = getUi(locale);
 
 const initials = profile.displayLines.map((line) => line[0]).join("");
+const alternateLocale = LOCALES.find((candidate) => candidate !== locale) ?? locale;
 
-const navLinks = [
-	{ href: "#about", label: "About" },
-	{ href: "#projects", label: "Projects" },
-	{ href: "#career", label: "Career" },
-	{ href: "#contact", label: "Contact" },
+const links = [
+	{ id: "about", label: t.nav.about },
+	{ id: "projects", label: t.nav.projects },
+	{ id: "career", label: t.nav.career },
+	{ id: "contact", label: t.nav.contact },
 ];
 ---
 
-<header class="sticky top-0 z-40 border-b border-rule bg-ground/90 backdrop-blur">
-	<div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4 sm:px-10">
-		<a href="#main" aria-label={`${profile.name} — back to top`} class="link-accent font-mono text-sm text-ink">
-			{initials}
-		</a>
-
-		<nav aria-label="Section" class="hidden items-center gap-6 sm:flex">
-			{navLinks.map((link) => (
-					<a
-						href={link.href}
-						class="link-accent font-mono text-sm text-ink-mute aria-[current=location]:text-accent"
-					>
-						{link.label}
-					</a>
-				))}
-		</nav>
-
-		<ModeToggle mode={SiteMode.Preview} />
-	</div>
-</header>
-
-<script>
-import "@/lib/nav";
-</script>
+<NavBar
+	client:load
+	initials={initials}
+	homeLabel={`${initials} — ${profile.name} (${t.backToTop})`}
+	sectionLabel={t.nav.label}
+	links={links}
+	openMenuLabel={t.nav.openMenu}
+	closeMenuLabel={t.nav.closeMenu}
+	languageLabel={t.nav.switchLanguage}
+	alternate={{
+		locale: alternateLocale,
+		href: getAlternatePath(Astro.url.pathname, alternateLocale),
+		label: LOCALE_LABELS[alternateLocale],
+	}}
+	devHref={localizePath("/dev", locale)}
+	devLabel={t.mode.dev}
+	devAriaLabel={t.mode.toDev}
+/>

@@ -2,18 +2,20 @@
 interface Props {
 	index: number;
 	title: string;
-	id: string;
+	eyebrow?: string;
 }
 
-const { index, title, id } = Astro.props;
+const { index, title, eyebrow } = Astro.props;
 const paddedIndex = String(index).padStart(2, "0");
 ---
 
-<div id={id} class="scroll-mt-24 border-b border-rule pb-4">
-	<div class="flex items-baseline gap-4">
-		<span class="font-mono text-sm text-ink-mute">{paddedIndex}</span>
-		<h2 data-glitch-line data-glitch-radius="60" class="font-display text-h2 text-ink">{title}</h2>
+<div class="flex flex-col gap-3">
+	<div class="flex items-center gap-3 font-mono text-xs tracking-widest text-accent uppercase">
+		<span>{paddedIndex}</span>
+		<span aria-hidden="true" class="h-px w-10 bg-accent/60"></span>
+		{eyebrow && <span class="text-ink-mute">{eyebrow}</span>}
 	</div>
+	<h2 data-glitch-line data-glitch-radius="60" class="font-display text-h1 leading-none text-ink">{title}</h2>
 </div>
 
 <script>

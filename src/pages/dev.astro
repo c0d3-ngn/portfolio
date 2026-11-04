@@ -1,19 +1,5 @@
 ---
-import ModeToggle from "@/components/ui/ModeToggle.astro";
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import { SiteMode } from "@/types/mode";
-
-const title = "Dev mode — coming soon";
+import DevPage from "@/components/pages/DevPage.astro";
 ---
 
-<BaseLayout title={title} noindex>
-	<section class="mx-auto flex min-h-screen max-w-3xl flex-col items-start justify-center px-6 font-mono sm:px-10">
-		<p class="text-sm text-ink-mute">$ whoami</p>
-		<h1 class="mt-2 text-h1 text-accent">dev mode — under construction</h1>
-		<p class="mt-6 max-w-md text-ink-mute">
-			The interactive terminal (neofetch profile, command parser, easter eggs) lands in a later milestone. For now,
-			here's the way back.
-		</p>
-		<ModeToggle mode={SiteMode.Dev} class="mt-10" />
-	</section>
-</BaseLayout>
+<DevPage locale="en" />

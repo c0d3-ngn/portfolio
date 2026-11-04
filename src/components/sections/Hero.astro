@@ -1,59 +1,99 @@
 ---
-import { profile } from "@/data/profile";
+import HeroSpotlight from "@/components/islands/HeroSpotlight";
+import MagneticLink from "@/components/islands/MagneticLink";
+import RoleRotator from "@/components/islands/RoleRotator";
+import { getProfile } from "@/data/profile";
+import type { Locale } from "@/i18n/ui";
+import { getUi } from "@/i18n/utils";
 
-const { displayLines, role, tagline, socials } = profile;
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+const { displayLines, tagline, socials, email, role, location } = getProfile(locale);
+const t = getUi(locale);
+const nameRevealStep = 90;
+const afterNameDelay = displayLines.length * nameRevealStep;
 ---
 
-<section class="mx-auto flex min-h-screen max-w-5xl flex-col justify-center px-6 py-24 sm:px-10">
-	<p class="border-b border-rule pb-4 font-mono text-sm text-ink-mute">{role}</p>
+<section class="relative isolate flex min-h-svh flex-col justify-center overflow-hidden px-6 pt-32 pb-20 sm:px-10">
+	<div aria-hidden="true" class="bg-dot-grid pointer-events-none absolute inset-0 -z-10"></div>
+	<HeroSpotlight client:idle />
 
-	<div class="mt-10 flex flex-col-reverse items-start gap-8 md:flex-row md:items-center md:justify-between">
-		<h1 class="font-display leading-[0.92] tracking-tight text-ink">
-			{displayLines.map((line, i) => (
-					<span
-						data-reveal
-						data-glitch-line
-						style={`--reveal-delay: ${i * 90}ms`}
-						class="block text-display"
-					>
-						{line}
-					</span>
-				))}
-		</h1>
+	<div class="mx-auto grid w-full max-w-[67rem] items-center gap-12 md:grid-cols-[1.6fr_1fr]">
+		<div>
+			<p data-reveal-now style="--reveal-delay: 60ms" class="font-mono text-(length:--text-lg) text-accent">
+				<RoleRotator client:idle roles={t.hero.roles} />
+			</p>
 
-		<div data-reveal style={`--reveal-delay: ${displayLines.length * 90}ms`}>
-			<div class="avatar-frame h-28 w-28 md:h-56 md:w-56">
-				<canvas aria-hidden="true" data-src="/avatar.png"></canvas>
+			<h1 class="mt-3 font-display leading-[0.9] tracking-tight text-ink">
+				{displayLines.map((line, i) => (
+						<>
+							<span
+								data-reveal-now
+								data-glitch-line
+								style={`--reveal-delay: ${120 + i * nameRevealStep}ms`}
+								class="block text-display"
+							>
+								{line}
+							</span>{" "}
+						</>
+					))}
+				<span class="sr-only">— {role}, {location}</span>
+			</h1>
+
+			<p
+				data-reveal-now
+				style={`--reveal-delay: ${120 + afterNameDelay}ms`}
+				class="mt-8 max-w-xl text-(length:--text-lg) text-ink-mute"
+			>
+				{tagline}
+			</p>
+
+			<div
+				data-reveal-now
+				style={`--reveal-delay: ${200 + afterNameDelay}ms`}
+				class="mt-10 flex flex-wrap items-center gap-4"
+			>
+				<MagneticLink client:idle href={`mailto:${email}`} label={t.hero.getInTouch} />
+				<MagneticLink client:idle href="#projects" label={t.hero.viewWork} variant="outline" />
 			</div>
-			<p class="avatar-caption">hover to disturb</p>
+
+			<ul data-reveal-now style={`--reveal-delay: ${260 + afterNameDelay}ms`} class="mt-8 flex flex-wrap gap-x-6">
+				{socials.map((social) => (
+						<li>
+							<a
+								href={social.url}
+								target="_blank"
+								rel="noreferrer noopener"
+								class="link-accent inline-flex h-11 items-center font-mono text-sm text-ink-mute"
+							>
+								{social.label}
+							</a>
+						</li>
+					))}
+			</ul>
+		</div>
+
+		<div data-reveal-now style={`--reveal-delay: ${afterNameDelay}ms`} class="justify-self-start md:justify-self-end">
+			<div class="border-beam h-48 w-48 sm:h-56 sm:w-56 md:h-72 md:w-72">
+				<div class="avatar-frame h-full w-full bg-ground">
+					<canvas aria-hidden="true" data-src="/avatar.png"></canvas>
+				</div>
+			</div>
+			<p class="avatar-caption">{t.hero.hoverToDisturb}</p>
 		</div>
 	</div>
 
-	<p
-		data-reveal
-		style={`--reveal-delay: ${displayLines.length * 90 + 120}ms`}
-		class="mt-10 max-w-xl text-(length:--text-lg) text-ink-mute"
+	<a
+		href="#about"
+		aria-label={t.hero.scroll}
+		class="link-accent absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 font-mono text-xs text-ink-mute sm:flex"
 	>
-		{tagline}
-	</p>
-
-	<div
-		data-reveal
-		style={`--reveal-delay: ${displayLines.length * 90 + 220}ms`}
-		class="mt-12 flex flex-wrap items-center gap-6 border-t border-rule pt-8"
-	>
-		<a
-			href={`mailto:${profile.email}`}
-			class="link-accent inline-flex items-center gap-2 border border-rule px-5 py-3 font-mono text-sm text-ink hover:border-accent"
-		>
-			Get in touch
-		</a>
-		{socials.map((social) => (
-				<a href={social.url} target="_blank" rel="noreferrer noopener" class="link-accent font-mono text-sm text-ink-mute">
-					{social.label}
-				</a>
-			))}
-	</div>
+		{t.hero.scroll}
+		<span aria-hidden="true" class="scroll-hint h-8 w-px bg-linear-to-b from-accent to-transparent"></span>
+	</a>
 </section>
 
 <script>
